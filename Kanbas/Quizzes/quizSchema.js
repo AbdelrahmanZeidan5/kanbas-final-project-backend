@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const questionSchema = new mongoose.Schema({
     text: String,
     points: Number,
-    questionText: String,
+    questionText: { type: String, required: true },
 
     questionType: { //use this to determine which of the other options apply
         type: String,
@@ -12,7 +12,12 @@ const questionSchema = new mongoose.Schema({
       },
 
     //only used in multiple choice questions
-    multipleChoices: [{String, Boolean}], //list of pairs. The String is the text of the choice, the Boolean indicates correctness.
+    choices: [
+      {
+          text: { type: String, required: true },  
+          isCorrect: { type: Boolean, required: true}, 
+      },
+    ],
 
     //only used in true fase questions
     trueFalse: Boolean, //true if the answer to the question is 'true'.
@@ -29,9 +34,9 @@ const quizSchema = new mongoose.Schema(
       course: {type: String, required: true}, //course number (A String)
       description: String,
 
-      availableFrom: String, //these could be formatted as dates for the calendar date entry
-      availableUntil: String,
-      dueDate: String,
+      availableFrom: Date,
+      availableUntil: Date,
+      dueDate: Date,
       
       quizType: {
         type: String,
@@ -45,19 +50,20 @@ const quizSchema = new mongoose.Schema(
         enum: ["QUIZZES", "EXAMS", "ASSIGNMENTS", "PROJECT"],
         default: "QUIZZES",
       },
-      shuffleAnswers: Boolean,
+      shuffleAnswers: { type: Boolean, default: true },
       timeLimitInSeconds: Number, //encoded in SECONDS, convert units on front end for readability
-      multipleAttempts: Boolean,
-      howManyAttempts: Number, // if multipleAttempts is true, this is how many attempts are allowed
+      multipleAttempts: { type: Boolean, default: false },
+      howManyAttempts: { type: Number, default: 1 }, // if multipleAttempts is true, this is how many attempts are allowed
       showCorrectAnswers: {
         type: String,
         enum: ["ON_QUIZ_COMPLETION", "ON_DUE_DATE", "WHEN_QUIZ_IS_NO_LONGER_AVAILABLE"],
         default: "ON_QUIZ_COMPLETION",
       },
       accessCode: String,
-      oneQuestionAtATime: Boolean,
-      webcamRequired: Boolean,
-      lockQuestionsAfterAnswering: Boolean, 
+      oneQuestionAtATime: { type: Boolean, default: true },
+      webcamRequired: { type: Boolean, default: false },
+      lockQuestionsAfterAnswering: { type: Boolean, default: false }, 
+      published: { type: Boolean, default: false }, // Tracks whether the quiz is available to students
       
     },
     { 
