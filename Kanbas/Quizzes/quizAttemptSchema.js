@@ -20,6 +20,7 @@ const quizAttemptSchema = new mongoose.Schema({
   attempteeUsername: String, //the unique username of the person taking the quiz
   answers: [questionAttemptSchema],
   score: Number, //score on the quiz, can be calculated from answers
+  date: String, //when the quiz was attempted
 },
 {
 collection: "quizAttempts"

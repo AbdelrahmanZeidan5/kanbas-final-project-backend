@@ -26,6 +26,7 @@ const questionSchema = new mongoose.Schema({
 const quizSchema = new mongoose.Schema(
     {
       title: { type: String, required: true, unique: true},
+      course: {type: String, required: true}, //course number (A String)
       description: String,
 
       availableFrom: String, //these could be formatted as dates for the calendar date entry
