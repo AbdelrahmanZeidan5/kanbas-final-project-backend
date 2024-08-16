@@ -3,10 +3,8 @@ import * as User from "../../User/dao.js";
 import mongoose from "mongoose";
 
 export default function CourseRoutes(app) {
-
     // Middleware to ensure user is authenticated
     const ensureAuthenticated = (req, res, next) => {
-        console.log("Authenticated");
         if (req.session && req.session.currentUser) {
             next();
         } else {
@@ -30,7 +28,6 @@ export default function CourseRoutes(app) {
 
     // Find all courses for a user
     const findCoursesForUser = async (req, res) => {
-        console.log("in findCoursesForUser");
         try {
             const user = req.session.currentUser;
             if (!user) {
@@ -39,16 +36,15 @@ export default function CourseRoutes(app) {
 
             if (user.role === 'FACULTY') {
                 const courses = await dao.findCoursesByCreator(user.username);
-                console.log("courses", courses);
                 res.json(courses);
             } else if (user.role === 'STUDENT') {
-                console.log("user", user);
                 const userWithCourses = await User.findUserByUsername(user.username);
-                let courses = []
-                for (let course of userWithCourses.enrolledCourses) {
-                    const courseData = await dao.findCoursesByNumber(course);
-                    courses.push(courseData[0]);
-                }
+                const courses = await Promise.all(
+                    userWithCourses.enrolledCourses.map(async (courseNumber) => {
+                        const courseData = await dao.findCoursesByNumber(courseNumber);
+                        return courseData[0];
+                    })
+                );
                 res.json(courses);
             } else {
                 res.status(403).json({ message: 'Forbidden' });
@@ -58,7 +54,6 @@ export default function CourseRoutes(app) {
             res.status(500).json({ message: 'Internal Server Error' });
         }
     };
-
 
     // Enroll in a course
     const enrollInCourse = async (req, res) => {
@@ -104,7 +99,11 @@ export default function CourseRoutes(app) {
     const findCourseById = async (req, res) => {
         try {
             const course = await dao.findCourseById(req.params.id);
-            res.json(course);
+            if (course) {
+                res.json(course);
+            } else {
+                res.status(404).json({ message: 'Course not found' });
+            }
         } catch (error) {
             console.error('Error finding course by ID:', error);
             res.status(500).json({ message: 'Internal Server Error' });
@@ -142,8 +141,4 @@ export default function CourseRoutes(app) {
     app.delete("/api/courses/:id", ensureAuthenticated, deleteCourse);
     app.put("/api/courses/:id", ensureAuthenticated, updateCourse);
     app.post("/api/courses/:courseId/enroll", ensureAuthenticated, enrollInCourse);
-    app.get("/api/courses", ensureAuthenticated, (req, res) => {
-        console.log("GET /api/courses called");
-        findCoursesForUser(req, res);
-    });
 }

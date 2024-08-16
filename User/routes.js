@@ -66,8 +66,13 @@ export default function UserRoutes(app) {
     };
 
     const signout = (req, res) => {
-        req.session.destroy();
-        res.sendStatus(200);
+        req.session.destroy(err => {
+            if (err) {
+                return res.status(500).json({ message: "Failed to sign out." });
+            }
+            res.clearCookie("connect.sid"); // Clear the session cookie
+            res.sendStatus(200);
+        });
     };
 
 
