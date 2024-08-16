@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
-import { quizSchema, questionSchema } from "./schema.js";
+import { quizSchema, questionSchema, quizAttemptSchema} from "./schema.js";
 
 const Quiz = mongoose.model("Quiz", quizSchema);
 const Question = mongoose.model("Question", questionSchema);
+const QuizAttempt = mongoose.model("QuizAttempt", quizAttemptSchema);
 
-export { Quiz, Question };
+export { Quiz, Question, QuizAttempt};

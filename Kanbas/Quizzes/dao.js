@@ -1,4 +1,4 @@
-import { Quiz, Question } from "./model.js";
+import { Quiz, Question, QuizAttempt } from "./model.js";
 
 // Create a new quiz
 export const createQuiz = (quiz) => {
@@ -38,3 +38,24 @@ export const updateQuestionById = (questionId, question) => {
 
 // Delete a question by ID
 export const deleteQuestionById = (questionId) => Question.findByIdAndDelete(questionId);
+
+// Create a QuizAttempt
+export const createQuizAttempt = (quizId, qa) => {
+    qa.quizId = quizId;
+    delete qa._id;
+    return QuizAttempt.create(qa);
+};
+
+//Update a QuizAttempt
+export const updateQuizAttempt = (qaId, qa) => {
+    return QuizAttempt.updateOne( {_id: qaId }, { $set: qa });
+};
+
+// Delete a QuizAttempt by ID
+export const deleteQuizAttemptById = (qaId) => QuizAttempt.findByIdAndDelete(qaId);
+
+// Find all attempts for a quiz
+export const findQuizAttemptsByQuizId = (quizId) => QuizAttempt.find({ quizId: quizId });
+
+// Find a quiz attempt by ID
+export const findQuizAttemptById = (qaId) => QuizAttempt.findById(qaId);

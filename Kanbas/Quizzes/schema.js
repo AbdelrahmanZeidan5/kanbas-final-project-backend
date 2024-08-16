@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 export const quizSchema = new mongoose.Schema(
     {
@@ -50,3 +50,17 @@ export const questionSchema = new mongoose.Schema(
     },
     { collection: "questions" }
 );
+  
+  export const quizAttemptSchema = new mongoose.Schema({
+    quizId: Schema.Types.ObjectId, //the unique id of the quiz taken
+    attempteeUsername: String, //the unique username of the person taking the quiz
+    answers: {}, //keys are questionIds, values are string answer for fill in blank questions, selected answer id otherwise
+    date: Date, //when the quiz was attempted
+  },
+  {
+  collection: "quizAttempts"
+  }
+  );
+  
+  
+  export default quizAttemptSchema;

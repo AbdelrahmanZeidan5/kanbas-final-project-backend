@@ -69,6 +69,42 @@ export default function QuizRoutes(app) {
         res.json(status);
     };
 
+    const createQuizAttempt = async (req, res) => {
+        try {
+            const quizId = req.params.qid;
+            const quizAttempt = await dao.createQuizAttempt(quizId, req.body);
+            res.json(quizAttempt);
+        } catch (error) {
+            res.status(500).send({ message: "Error creating quiz attempt" });
+        }
+    }
+
+    const findQuizAttemptsByQuizId = async (req, res) => {
+        const quizAttempts = await dao.findQuizAttemptsByQuizId(req.params.qid);
+        res.json(quizAttempts);
+    };
+
+    const findQuizAttemptById = async (req, res) => {
+        const quizAttempt = await dao.findQuizAttemptById(req.params.qaId);
+        res.json(quizAttempt);
+    };
+
+    const updateQuizAttempt = async (req, res) => {
+        const status = await dao.updateQuizAttempt(req.params.qaId, req.body);
+        res.json(status);
+    };
+
+    const deleteQuizAttempt = async (req, res) => {
+        const status = await dao.deleteQuizAttemptById(req.params.qaId);
+        res.json(status);
+    };
+
+    app.post("/api/quizzes/:qid/attempts", createQuizAttempt);
+    app.get("/api/quizzes/:qid/attempts", findQuizAttemptsByQuizId);
+    app.get("/api/quizzes/:qid/attempts/:qaId", findQuizAttemptById);
+    app.put("/api/quizAttempts/:qid/attempts/:qaId", updateQuizAttempt);
+    app.delete("/api/quizAttempts/:qaId", deleteQuizAttempt);
+
     app.get("/api/courses/:cid/quizzes", findAllQuizzes);
     app.post("/api/courses/:cid/quizzes", createQuiz);
     app.get("/api/quizzes/:qid", findQuizById);
