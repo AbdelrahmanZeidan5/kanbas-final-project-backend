@@ -28,6 +28,7 @@ export default function CourseRoutes(app) {
 
     // Find all courses for a user
     const findCoursesForUser = async (req, res) => {
+        console.log("in findCoursesForUser: username:", req.session.currentUser);
         try {
             const user = req.session.currentUser;
             if (!user) {
@@ -36,6 +37,7 @@ export default function CourseRoutes(app) {
 
             if (user.role === 'FACULTY') {
                 const courses = await dao.findCoursesByCreator(user.username);
+                console.log("faculty: courses", courses);
                 res.json(courses);
             } else if (user.role === 'STUDENT') {
                 const userWithCourses = await User.findUserByUsername(user.username);
@@ -45,6 +47,7 @@ export default function CourseRoutes(app) {
                         return courseData[0];
                     })
                 );
+                console.log("student: courses", courses);
                 res.json(courses);
             } else {
                 res.status(403).json({ message: 'Forbidden' });

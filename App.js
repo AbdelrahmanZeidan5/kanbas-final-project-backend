@@ -32,12 +32,14 @@ const sessionOptions = {
     secret: process.env.SESSION_SECRET || "kanbas",
     resave: false,
     saveUninitialized: false,
+    /*
     cookie: {
         sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
         secure: process.env.NODE_ENV !== "development", // Set to true in production to use HTTPS
         domain: process.env.NODE_SERVER_DOMAIN, // Ensure this matches your deployment domain
         maxAge: 24 * 60 * 60 * 1000 // Cookie expiration (1 day)
     },
+    */
     proxy: process.env.NODE_ENV !== "development", // Enable if behind a proxy
 };
 

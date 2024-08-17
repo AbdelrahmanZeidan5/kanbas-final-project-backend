@@ -54,24 +54,47 @@ export default function UserRoutes(app) {
 
 
     const signin = async (req, res) => {
-        console.log("in signin")
+        console.log("in signin", req.session);
         const { username, password } = req.body;
-        const currentUser = await dao.findUserByCredentials(username, password);
-        if (currentUser) {
-            req.session["currentUser"] = currentUser;
-            res.json(currentUser);
-        } else {
-            res.status(401).json({ message: "Unable to login. Try again later." });
+        console.log("username", username);
+
+        try {
+            const currentUser = await dao.findUserByCredentials(username, password);
+
+            if (currentUser) {
+                // Explicitly set `req.session.currentUser`
+                req.session.currentUser = currentUser;
+
+                // Save the session explicitly
+                req.session.save((err) => {
+                    if (err) {
+                        console.error("Error saving session:", err);
+                        return res.status(500).json({ message: "Internal Server Error" });
+                    }
+
+                    // Send response after session is saved
+                    res.json(currentUser);
+                    console.log("current user is set", currentUser);
+                });
+            } else {
+                res.status(401).json({ message: "Unable to login. Try again later." });
+            }
+        } catch (err) {
+            console.error("Error during sign-in:", err);
+            res.status(500).json({ message: "Internal Server Error" });
         }
     };
 
     const signout = (req, res) => {
+        console.log("Session before destroy:", req.session);
         req.session.destroy(err => {
             if (err) {
+                console.error("Error destroying session:", err);
                 return res.status(500).json({ message: "Failed to sign out." });
             }
-            res.clearCookie("connect.sid"); // Clear the session cookie
+            res.clearCookie("connect.sid", { path: '/' }); // Clear the session cookie
             res.sendStatus(200);
+            console.log("Session after destroy:", req.session);
         });
     };
 
