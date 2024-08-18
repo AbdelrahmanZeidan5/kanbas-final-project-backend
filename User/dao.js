@@ -12,7 +12,11 @@ export const findUsersByPartialName = (partialName) => {
       $or: [{ firstName: { $regex: regex } }, { lastName: { $regex: regex } }],
     });
 };
-export const findUserById = (userId) => model.findById(userId);
+export const findUserById = (userId) => {
+    console.log("in findUserById dao", userId);
+    model.find({ _id: userId });
+}
+
 export const findUserByUsername = (username) =>  model.findOne({ username: username });
 export const findUserByCredentials = (username, password) => model.findOne({ username, password });
 export const updateUser = (userId, user) => model.updateOne({ _id: userId }, { $set: user });
