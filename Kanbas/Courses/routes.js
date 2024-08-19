@@ -51,7 +51,7 @@ export default function CourseRoutes(app) {
 
     // Find all courses for a user
     const findCoursesForUser = async (req, res) => {
-        console.log("in findCoursesForUser: username:", req.session.currentUser);
+        console.log("in findCoursesForUser: username:");
         try {
             const user = req.session.currentUser;
             if (!user) {
@@ -82,11 +82,56 @@ export default function CourseRoutes(app) {
         }
     };
 
+// Enroll a student in a course
+const enrollInCourse = async (req, res) => {
+  console.log("Page to enroll reached");
+  try {
+    const user = req.session.currentUser;
+    console.log("Confirming user to enroll");
+    if (!user || user.role !== "STUDENT") {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { courseId } = req.body;
+    const course = await dao.findCourseById(courseId);
+    console.log("Found course to enroll to");
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Add the course number to the student's enrolledCourses list
+    const updatedUser = await User.addCourseToStudent(user.username, course.number);
+    console.log("Successfully enrolled in course");
+
+    res.json({ message: "Successfully enrolled", user: updatedUser });
+  } catch (error) {
+    console.error("Error enrolling in course:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
+  const loadAllCourses = async (req, res) => {
+      try {
+          // Retrieve all courses from the database
+          const courses = await dao.findAllCourses();
+
+          // Respond with the courses data
+          res.json(courses);
+      } catch (error) {
+          console.error("Error loading all courses:", error);
+          res.status(500).json({ message: "Internal Server Error" });
+      }
+  };
+
 
   app.post("/api/courses", createCourse);
   app.get("/api/courses", findCoursesForUser);
+  app.get("/api/courses/all", loadAllCourses);
   app.get("/api/courses/:id", findCourseById);
   app.delete("/api/courses/:id", deleteCourse);
   app.put("/api/courses/:id", updateCourse);
-
+  app.post("/api/enroll", enrollInCourse);
+  app.get("/api/courses/all", findAllCourses);
 }
