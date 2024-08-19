@@ -5,6 +5,7 @@ import Hello from './Hello.js';
 import CourseRoutes from "./Kanbas/Courses/routes.js";
 import ModuleRoutes from "./Kanbas/Modules/routes.js";
 import AssignmentRoutes from "./Kanbas/Assignments/routes.js";
+import QuizRoutes from "./Kanbas/Quizzes/routes.js";
 import cors from "cors";
 import mongoose from "mongoose";
 import "dotenv/config";
@@ -37,14 +38,15 @@ if (process.env.NODE_ENV !== "development") {
     };
 }
 
-  
+
 app.use(session(sessionOptions));
-  
-   
+
+
 app.use(express.json());
 UserRoutes(app);
 CourseRoutes(app);
 ModuleRoutes(app);
 AssignmentRoutes(app);
+QuizRoutes(app)
 Hello(app)
 app.listen(process.env.PORT || 4000)

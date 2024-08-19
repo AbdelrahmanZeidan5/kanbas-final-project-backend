@@ -19,3 +19,5 @@ export const findCoursesByPartialName = (partialName) => {
       $or: [{ name: { $regex: regex } }],
     });
 };
+
+export const findCoursesByCreator = (creatorId) => model.find({ createdBy: creatorId });
