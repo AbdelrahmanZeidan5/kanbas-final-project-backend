@@ -1,4 +1,7 @@
 import * as dao from "./dao.js";
+import * as User from "../../User/dao.js";
+import mongoose from "mongoose";
+
 
 export default function CourseRoutes(app) {
     const createCourse = async (req, res) => {
@@ -46,8 +49,42 @@ export default function CourseRoutes(app) {
         res.json(status);
     };
 
+    // Find all courses for a user
+    const findCoursesForUser = async (req, res) => {
+        console.log("in findCoursesForUser: username:", req.session.currentUser);
+        try {
+            const user = req.session.currentUser;
+            if (!user) {
+                return res.status(401).json({ message: 'Unauthorized' });
+            }
+
+            if (user.role === 'FACULTY') {
+                const courses = await dao.findCoursesByCreator(user.username);
+                console.log("faculty: courses", courses);
+                res.json(courses);
+            } else if (user.role === 'STUDENT') {
+                const userWithCourses = await User.findUserByUsername(user.username);
+                console.log("userWithCourses: ", userWithCourses);
+                const courses = await Promise.all(
+                    userWithCourses.enrolledCourses.map(async (courseNumber) => {
+                        const courseData = await dao.findCoursesByNumber(courseNumber);
+                        return courseData[0];
+                    })
+                );
+                console.log("student: courses", courses);
+                res.json(courses);
+            } else {
+                res.status(403).json({ message: 'Forbidden' });
+            }
+        } catch (error) {
+            console.error('Error finding courses for user:', error);
+            res.status(500).json({ message: 'Internal Server Error' });
+        }
+    };
+
+
   app.post("/api/courses", createCourse);
-  app.get("/api/courses", findAllCourses);
+  app.get("/api/courses", findCoursesForUser);
   app.get("/api/courses/:id", findCourseById);
   app.delete("/api/courses/:id", deleteCourse);
   app.put("/api/courses/:id", updateCourse);

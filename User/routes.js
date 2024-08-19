@@ -53,22 +53,43 @@ export default function UserRoutes(app) {
     };
     
 
-    const signin = async (req, res) => { 
+    const signin = async (req, res) => {
+        console.log("in signin", req.session);
         const { username, password } = req.body;
-        const currentUser = await dao.findUserByCredentials(username, password);
-        if (currentUser) {
-            req.session["currentUser"] = currentUser;
-            res.json(currentUser);
-        } else {
-            res.status(401).json({ message: "Unable to login. Try again later." });
+        console.log("username", username);
+
+        try {
+            const currentUser = await dao.findUserByCredentials(username, password);
+
+            if (currentUser) {
+                // Explicitly set `req.session.currentUser`
+                req.session.currentUser = currentUser;
+
+                // Save the session explicitly
+                req.session.save((err) => {
+                    if (err) {
+                        console.error("Error saving session:", err);
+                        return res.status(500).json({ message: "Internal Server Error" });
+                    }
+
+                    // Send response after session is saved
+                    res.json(currentUser);
+                    console.log("current user is set", currentUser);
+                });
+            } else {
+                res.status(401).json({ message: "Unable to login. Try again later." });
+            }
+        } catch (err) {
+            console.error("Error during sign-in:", err);
+            res.status(500).json({ message: "Internal Server Error" });
         }
     };
-    
+
     const signout = (req, res) => {
         req.session.destroy();
         res.sendStatus(200);
     };
-    
+
 
     const profile = async (req, res) => {
         const currentUser = req.session["currentUser"];
@@ -78,7 +99,7 @@ export default function UserRoutes(app) {
         }
         res.json(currentUser);
     };
-    
+
 
     app.post("/api/users", createUser);
     app.get("/api/users", findAllUsers);
