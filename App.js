@@ -23,21 +23,39 @@ app.use(
     })
 );
  
+// const sessionOptions = {
+//     secret: process.env.SESSION_SECRET || "kanbas",
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {}
+// };
+
+ 
+// if (process.env.NODE_ENV !== "development") {
+//     sessionOptions.proxy = true;
+//     sessionOptions.cookie = {
+//         sameSite: "none",
+//         secure: true,
+//         domain: process.env.NODE_SERVER_DOMAIN,
+//     };
+// }
+
 const sessionOptions = {
     secret: process.env.SESSION_SECRET || "kanbas",
     resave: false,
     saveUninitialized: false,
-    cookie: {}
-};
- 
-if (process.env.NODE_ENV !== "development") {
-    sessionOptions.proxy = true;
-    sessionOptions.cookie = {
+    cookie: {
         sameSite: "none",
         secure: true,
-        domain: process.env.NODE_SERVER_DOMAIN,
-    };
+        domain: process.env.NODE_SERVER_DOMAIN, // Use this environment variable here
+    }
+};
+
+if (process.env.NODE_ENV !== "development") {
+    sessionOptions.proxy = true;
 }
+
+
  
 app.use(session(sessionOptions));
  
