@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import * as dao from "./dao.js";
 
 export default function UserRoutes(app) {
@@ -10,9 +9,9 @@ export default function UserRoutes(app) {
     const findAllUsers = async (req, res) => {
         const { role, name } = req.query;
         if (role) {
-            const users = await dao.findUsersByRole(role);
-            res.json(users);
-            return;
+        const users = await dao.findUsersByRole(role);
+        res.json(users);
+        return;
         }
 
         if (name) {
@@ -26,57 +25,20 @@ export default function UserRoutes(app) {
     };
 
     const findUserById = async (req, res) => {
-        const { userId } = req.params;
-
-        // Validate userId as ObjectId
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: 'Invalid user ID format' });
-        }
-
-        try {
-            const user = await dao.findUserById(userId);
-            if (!user) {
-                return res.status(404).json({ message: 'User not found' });
-            }
-            res.json(user);
-        } catch (error) {
-            console.error('Error finding user by ID:', error);
-            res.status(500).json({ message: 'Internal Server Error' });
-        }
+        const user = await dao.findUserById(req.params.userId);
+        res.json(user);
     };
 
     const deleteUser = async (req, res) => {
-        const { userId } = req.params;
-
-        // Validate userId as ObjectId
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: 'Invalid user ID format' });
-        }
-
-        try {
-            const status = await dao.deleteUser(userId);
-            res.json(status);
-        } catch (error) {
-            console.error('Error deleting user:', error);
-            res.status(500).json({ message: 'Internal Server Error' });
-        }
+        const status = await dao.deleteUser(req.params.userId);
+        res.json(status);
     };
+
 
     const updateUser = async (req, res) => {
         const { userId } = req.params;
-
-        // Validate userId as ObjectId
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: 'Invalid user ID format' });
-        }
-
-        try {
-            const status = await dao.updateUser(userId, req.body);
-            res.json(status);
-        } catch (error) {
-            console.error('Error updating user:', error);
-            res.status(500).json({ message: 'Internal Server Error' });
-        }
+        const status = await dao.updateUser(userId, req.body);
+        res.json(status);
     };
 
     const signup = async (req, res) => {
@@ -89,6 +51,7 @@ export default function UserRoutes(app) {
         req.session["currentUser"] = currentUser;
         res.json(currentUser);
     };
+    
 
     const signin = async (req, res) => {
         console.log("in signin", req.session);
@@ -99,13 +62,17 @@ export default function UserRoutes(app) {
             const currentUser = await dao.findUserByCredentials(username, password);
 
             if (currentUser) {
+                // Explicitly set `req.session.currentUser`
                 req.session.currentUser = currentUser;
 
+                // Save the session explicitly
                 req.session.save((err) => {
                     if (err) {
                         console.error("Error saving session:", err);
                         return res.status(500).json({ message: "Internal Server Error" });
                     }
+
+                    // Send response after session is saved
                     res.json(currentUser);
                     console.log("current user is set", currentUser);
                 });
@@ -123,6 +90,7 @@ export default function UserRoutes(app) {
         res.sendStatus(200);
     };
 
+
     const profile = async (req, res) => {
         const currentUser = req.session["currentUser"];
         if (!currentUser) {
@@ -132,14 +100,14 @@ export default function UserRoutes(app) {
         res.json(currentUser);
     };
 
-    // Define routes explicitly to avoid conflicts
+
     app.post("/api/users", createUser);
     app.get("/api/users", findAllUsers);
-    app.post("/api/users/profile", profile); // Specific route for 'profile' using POST
-    app.get("/api/users/:userId", findUserById); // Route for user ID
+    app.get("/api/users/:userId", findUserById);
     app.put("/api/users/:userId", updateUser);
     app.delete("/api/users/:userId", deleteUser);
     app.post("/api/users/signup", signup);
     app.post("/api/users/signin", signin);
     app.post("/api/users/signout", signout);
+    app.post("/api/users/profile", profile);
 }
