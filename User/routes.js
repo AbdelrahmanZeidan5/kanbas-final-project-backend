@@ -9,9 +9,9 @@ export default function UserRoutes(app) {
     const findAllUsers = async (req, res) => {
         const { role, name } = req.query;
         if (role) {
-            const users = await dao.findUsersByRole(role);
-            res.json(users);
-            return;
+        const users = await dao.findUsersByRole(role);
+        res.json(users);
+        return;
         }
 
         if (name) {
@@ -25,45 +25,18 @@ export default function UserRoutes(app) {
     };
 
     const findUserById = async (req, res) => {
-        const { userId } = req.params;
-
-        // Check if the userId is 'profile'
-        if (userId === 'profile') {
-            return profile(req, res);  // Redirect to the profile handler
-        }
-
-        // Validate that userId is a valid ObjectId
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: 'Invalid user ID format' });
-        }
-
-        const user = await dao.findUserById(userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+        const user = await dao.findUserById(req.params.userId);
         res.json(user);
     };
 
     const deleteUser = async (req, res) => {
-        const { userId } = req.params;
-
-        // Validate that userId is a valid ObjectId
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: 'Invalid user ID format' });
-        }
-
-        const status = await dao.deleteUser(userId);
+        const status = await dao.deleteUser(req.params.userId);
         res.json(status);
     };
 
+
     const updateUser = async (req, res) => {
         const { userId } = req.params;
-
-        // Validate that userId is a valid ObjectId
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: 'Invalid user ID format' });
-        }
-
         const status = await dao.updateUser(userId, req.body);
         res.json(status);
     };
@@ -79,6 +52,7 @@ export default function UserRoutes(app) {
         res.json(currentUser);
     };
     
+
     const signin = async (req, res) => {
         console.log("in signin", req.session);
         const { username, password } = req.body;
@@ -88,13 +62,17 @@ export default function UserRoutes(app) {
             const currentUser = await dao.findUserByCredentials(username, password);
 
             if (currentUser) {
+                // Explicitly set `req.session.currentUser`
                 req.session.currentUser = currentUser;
 
+                // Save the session explicitly
                 req.session.save((err) => {
                     if (err) {
                         console.error("Error saving session:", err);
                         return res.status(500).json({ message: "Internal Server Error" });
                     }
+
+                    // Send response after session is saved
                     res.json(currentUser);
                     console.log("current user is set", currentUser);
                 });
@@ -112,6 +90,7 @@ export default function UserRoutes(app) {
         res.sendStatus(200);
     };
 
+
     const profile = async (req, res) => {
         const currentUser = req.session["currentUser"];
         if (!currentUser) {
@@ -121,7 +100,7 @@ export default function UserRoutes(app) {
         res.json(currentUser);
     };
 
-    // Route Definitions
+
     app.post("/api/users", createUser);
     app.get("/api/users", findAllUsers);
     app.get("/api/users/:userId", findUserById);
